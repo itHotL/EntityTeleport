@@ -7,11 +7,13 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Bukkit.getLogger().info("hello world!");
+        Bukkit.getLogger().info("EntityTeleport enabled!");
     }
 
     @Override
     public void onDisable() {
-        Bukkit.getLogger().info("goodbye world!");
+        Bukkit.getLogger().info("EntityTeleport disabled!");
     }
+
+
 }
