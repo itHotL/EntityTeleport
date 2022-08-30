@@ -2,3 +2,11 @@ main: io.github.ithotl.entityteleport.Main
 name: EntityTeleport
 version: 1.0-SNAPSHOT
 api-version: 1.19
+commands:
+  entityteleport:
+    aliases:
+      - et
+      - etreload
+    usage: "/etreload"
+    description: reloads the config settings from file
+    permission: entityteleport.reload
