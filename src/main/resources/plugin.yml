@@ -2,6 +2,9 @@ main: io.github.ithotl.entityteleport.Main
 name: EntityTeleport
 version: 1.0-SNAPSHOT
 api-version: 1.19
+depend:
+  - Multiverse-Core
+  - Multiverse-Portals
 commands:
   entityteleport:
     aliases:

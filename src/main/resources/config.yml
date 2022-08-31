@@ -1,0 +1,7 @@
+# List of MVPortal names that should allow entity-teleporting
+enabled-portals:
+  -
+
+# The time in seconds that a portal should stay open for entities
+# after the button has been pressed
+time-to-keep-portal-open-for-entities: 30

@@ -1,5 +1,11 @@
 package io.github.ithotl.entityteleport;
 
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+
+import java.io.File;
+import java.util.List;
+
 /**
  * Provides the (possibly empty) list of Multiverse
  * portals that should allow entity teleporting,
@@ -8,9 +14,37 @@ package io.github.ithotl.entityteleport;
  */
 public class ConfigHandler {
 
-    private final Main plugin;
+    private static Main plugin;
+    private static File configFile;
+    private static FileConfiguration config;
 
-    public ConfigHandler(Main plugin) {
-        this.plugin = plugin;
+    public ConfigHandler() {
+        plugin = Main.getInstance();
+        loadFile();
+    }
+
+    public static void reload() {
+        reloadFile();
+    }
+
+    public List<String> getPortalList() {
+        return config.getStringList("enabled-portals");
+    }
+
+    public int getAmountOfSecondsToActivatePortal() {
+        return config.getInt("time-to-keep-portal-open-for-entities", 30);
+    }
+
+    private void loadFile() {
+        plugin.saveDefaultConfig();
+        configFile = new File(plugin.getDataFolder(), "config.yml");
+        config = YamlConfiguration.loadConfiguration(configFile);
+    }
+
+    private static void reloadFile() {
+        if (!configFile.exists()) {
+            plugin.saveDefaultConfig();
+        }
+        config = YamlConfiguration.loadConfiguration(configFile);
     }
 }
