@@ -1,7 +1,7 @@
 main: io.github.ithotl.entityteleport.Main
 name: EntityTeleport
-version: 1.0-SNAPSHOT
 api-version: 1.19
+version: 1.0-SNAPSHOT
 depend:
   - Multiverse-Core
   - Multiverse-Portals
@@ -9,7 +9,9 @@ commands:
   entityteleport:
     aliases:
       - et
-      - etreload
-    usage: "/etreload"
+    usage: "/entityteleport reload"
     description: reloads the config settings from file
     permission: entityteleport.reload
+permissions:
+  entityteleport:
+    default: op

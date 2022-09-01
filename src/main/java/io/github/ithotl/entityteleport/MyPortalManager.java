@@ -1,9 +1,6 @@
 package io.github.ithotl.entityteleport;
 
-import com.onarandombox.MultiverseCore.api.MVWorldManager;
-import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 import com.onarandombox.MultiversePortals.MVPortal;
-import com.onarandombox.MultiversePortals.PortalLocation;
 import com.onarandombox.MultiversePortals.utils.PortalManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -25,56 +22,48 @@ import java.util.stream.Collectors;
  */
 public class MyPortalManager {
 
-    private final PortalManager mvPortalManager;
-    private final MVWorldManager mvWorldManager;
-    private final int entityTeleportWindow;
+    private static MyPortalManager instance;
+    private static ConfigHandler configHandler;
+    private static PortalManager mvPortalManager;
+    private static Set<ActivePortal> entityTeleportingPortals;
 
-    private Set<MVPortal> relevantPortals;
-    private Set<PortalLocation> portalLocations;
+    public MyPortalManager(@NotNull ConfigHandler config, PortalManager mvPortalManager) {
+        instance = this;
+        MyPortalManager.configHandler = config;
+        MyPortalManager.mvPortalManager = mvPortalManager;
 
-    public MyPortalManager(@NotNull ConfigHandler config, MVWorldManager mvWorldManager, PortalManager mvPortalManager) {
-        this.mvPortalManager = mvPortalManager;
-        this.mvWorldManager = mvWorldManager;
-        entityTeleportWindow = config.getAmountOfSecondsToActivatePortal();
-
-        relevantPortals = getRelevantPortals(config.getPortalList());
-        if (!relevantPortals.isEmpty()) {
-            portalLocations = getRelevantPortalLocations(relevantPortals);
+        entityTeleportingPortals = getRelevantPortals(config.getPortalList());
+        if (!entityTeleportingPortals.isEmpty()) {
             new PlayerInteractListener(this);
         }
     }
 
-    public boolean isButtonOnRelevantPortal(Location location) {
+    public static void updateSettings() {
+        entityTeleportingPortals = getRelevantPortals(configHandler.getPortalList());
+        if (!entityTeleportingPortals.isEmpty() && !PlayerInteractListener.isRunning()) {
+            new PlayerInteractListener(instance);
+        }
+    }
+
+    public boolean isButtonOnRelevantPortal(@NotNull Location location) {
         World world = location.getWorld();
         if (world != null) {
-            MultiverseWorld mvWorld = mvWorldManager.getMVWorld(world);
-            Set<MVPortal> portalsInThisWorld = getPortalsInWorld(mvWorld);
+            Set<ActivePortal> portalsInThisWorld = getPortalsInWorld(world);
             return portalsInThisWorld.stream()
-                    .anyMatch(mvPortal -> mvPortal.getLocation().getRegion().containsVector(location));
+                    .anyMatch(portal -> portal.containsLocation(location));
         }
         return false;
     }
 
-    private Set<MVPortal> getPortalsInWorld(MultiverseWorld mvWorld) {
-        return relevantPortals.stream()
-                .filter(mvPortal -> mvPortal.getLocation().getMVWorld() == mvWorld)
-                .collect(Collectors.toSet());
-    }
-
-    private Set<MVPortal> getRelevantPortals(@NotNull List<String> portalNames) {
+    private static Set<ActivePortal> getRelevantPortals(@NotNull List<String> portalNames) {
         return portalNames.stream()
-                .map(this::getMVPortal)
+                .map(MyPortalManager::getMVPortal)
                 .filter(Objects::nonNull)
+                .map(ActivePortal::fromMVPortal)
                 .collect(Collectors.toSet());
     }
 
-    private Set<PortalLocation> getRelevantPortalLocations(@NotNull Set<MVPortal> mvPortals) {
-        return mvPortals.stream()
-                .map(MVPortal::getLocation)
-                .collect(Collectors.toSet());
-    }
-
-    private @Nullable MVPortal getMVPortal(@NotNull String portalName) {
+    private static @Nullable MVPortal getMVPortal(@NotNull String portalName) {
         MVPortal portal = mvPortalManager.getPortal(portalName);
         if (portal != null) {
             return portal;
@@ -82,5 +71,11 @@ public class MyPortalManager {
         Bukkit.getLogger().warning("No Multiverse portal found with name " + portalName + "!" +
                 "Please check your config file and ensure the names of your specified portals are correct");
         return null;
+    }
+
+    private Set<ActivePortal> getPortalsInWorld(World world) {
+        return entityTeleportingPortals.stream()
+                .filter(portal -> portal.world() == world)
+                .collect(Collectors.toSet());
     }
 }
