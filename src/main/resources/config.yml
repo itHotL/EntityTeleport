@@ -5,3 +5,7 @@ enabled-portals:
 # The time in seconds that a portal should stay open for entities
 # after the button has been pressed
 time-to-keep-portal-open-for-entities: 30
+
+# Color of the particles that indicate entities can currently
+# go through the portal (in RGB format)
+particle-color: 0x800080

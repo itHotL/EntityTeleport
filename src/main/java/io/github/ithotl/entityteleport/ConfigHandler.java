@@ -1,5 +1,6 @@
 package io.github.ithotl.entityteleport;
 
+import org.bukkit.Color;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -33,6 +34,17 @@ public class ConfigHandler {
 
     public int getAmountOfSecondsToActivatePortal() {
         return config.getInt("time-to-keep-portal-open-for-entities", 30);
+    }
+
+    public Color getParticleColor() {
+        int colorName = config.getInt("particle-color", 0x800080);
+        try {
+            return Color.fromRGB(colorName);
+        }
+        catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return Color.PURPLE;
+        }
     }
 
     private void loadFile() {

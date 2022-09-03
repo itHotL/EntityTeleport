@@ -47,6 +47,7 @@ public class MyPortalManager {
 
     public void activatePortal(EntityPortal entityPortal) {
         long duration = configHandler.getAmountOfSecondsToActivatePortal() * 20L;
+        Bukkit.getLogger().info("(myPortalManager) duration: " + duration);
         effectManager.animatePortal(entityPortal, duration);
     }
 

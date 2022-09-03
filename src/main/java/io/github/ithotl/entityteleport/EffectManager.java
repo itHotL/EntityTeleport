@@ -1,10 +1,8 @@
 package io.github.ithotl.entityteleport;
 
-import org.bukkit.Particle;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -27,29 +25,35 @@ public class EffectManager {
             @Override
             public void run() {
                 animator.cancel();
+                Bukkit.getLogger().info("(cancel-runnable): animator cancelled");
             }
         }.runTaskLaterAsynchronously(Main.getInstance(), duration);
     }
 
     private @NotNull BukkitTask provideParticles(@NotNull EntityPortal portal) {
         World world = portal.world();
-        Vector topLeftCorner = portal.getTopLeftPortalCorner();
+
         return new BukkitRunnable() {
             @Override
             public void run() {
-                if (portal.isAlongZAxis()) {
-                    for (int i = topLeftCorner.getBlockZ(); i <= portal.getTopRightPortalCorner().getBlockZ(); i++) {
-                        world.spawnParticle(Particle.DRAGON_BREATH, topLeftCorner.toLocation(world), 1);
-                        topLeftCorner.add(new Vector(0, 0, 1));
-                    }
-                }
-                else {
-                    for (int i = topLeftCorner.getBlockX(); i <= portal.getTopRightPortalCorner().getBlockX(); i++) {
-                        world.spawnParticle(Particle.DRAGON_BREATH, topLeftCorner.toLocation(world), 1);
-                        topLeftCorner.add(new Vector(1, 0, 0));
-                    }
-                }
+                portal.getTopRow().stream()
+                        .parallel()
+                        .forEach(vector -> spawnParticles(vector.toLocation(world)));
             }
         }.runTaskTimerAsynchronously(Main.getInstance(), 0, 20);
+    }
+
+    private void spawnParticles(@NotNull Location location) {
+        Bukkit.getLogger().info("(spawnParticles) particles at: " + location);
+        World world = location.getWorld();
+        if (world != null) {
+            world.spawnParticle(Particle.REDSTONE, location, 3, getDustOptions());
+            world.spawnParticle(Particle.DRIPPING_OBSIDIAN_TEAR, location, 3);
+        }
+    }
+
+    private @NotNull Particle.DustOptions getDustOptions() {
+        Color color = Main.getConfigHandler().getParticleColor();
+        return new Particle.DustOptions(color, 5);
     }
 }
