@@ -22,16 +22,16 @@ import java.util.stream.Collectors;
  */
 public class MyPortalManager {
 
-    private static MyPortalManager instance;
     private static ConfigHandler configHandler;
     private static PortalManager mvPortalManager;
-    private static Set<ActivePortal> entityTeleportingPortals;
+    private final EffectManager effectManager;
+    private static Set<EntityPortal> entityTeleportingPortals;
 
     public MyPortalManager(@NotNull ConfigHandler config, PortalManager mvPortalManager) {
-        instance = this;
         MyPortalManager.configHandler = config;
         MyPortalManager.mvPortalManager = mvPortalManager;
 
+        effectManager = new EffectManager();
         entityTeleportingPortals = getRelevantPortals(config.getPortalList());
         if (!entityTeleportingPortals.isEmpty()) {
             new PlayerInteractListener(this);
@@ -41,25 +41,32 @@ public class MyPortalManager {
     public static void updateSettings() {
         entityTeleportingPortals = getRelevantPortals(configHandler.getPortalList());
         if (!entityTeleportingPortals.isEmpty() && !PlayerInteractListener.isRunning()) {
-            new PlayerInteractListener(instance);
+            new PlayerInteractListener(Main.getPortalManager());
         }
     }
 
-    public boolean isButtonOnRelevantPortal(@NotNull Location location) {
+    public void activatePortal(EntityPortal entityPortal) {
+        long duration = configHandler.getAmountOfSecondsToActivatePortal() * 20L;
+        effectManager.animatePortal(entityPortal, duration);
+    }
+
+    public EntityPortal getRelevantPortal(@NotNull Location location) {
         World world = location.getWorld();
         if (world != null) {
-            Set<ActivePortal> portalsInThisWorld = getPortalsInWorld(world);
+            Set<EntityPortal> portalsInThisWorld = getPortalsInWorld(world);
             return portalsInThisWorld.stream()
-                    .anyMatch(portal -> portal.containsLocation(location));
+                    .filter(portal -> portal.containsLocation(location))
+                    .findAny()
+                    .orElse(null);
         }
-        return false;
+        return null;
     }
 
-    private static Set<ActivePortal> getRelevantPortals(@NotNull List<String> portalNames) {
+    private static Set<EntityPortal> getRelevantPortals(@NotNull List<String> portalNames) {
         return portalNames.stream()
                 .map(MyPortalManager::getMVPortal)
                 .filter(Objects::nonNull)
-                .map(ActivePortal::fromMVPortal)
+                .map(EntityPortal::fromMVPortal)
                 .collect(Collectors.toSet());
     }
 
@@ -73,7 +80,7 @@ public class MyPortalManager {
         return null;
     }
 
-    private Set<ActivePortal> getPortalsInWorld(World world) {
+    private Set<EntityPortal> getPortalsInWorld(World world) {
         return entityTeleportingPortals.stream()
                 .filter(portal -> portal.world() == world)
                 .collect(Collectors.toSet());

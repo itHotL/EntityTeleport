@@ -3,7 +3,6 @@ name: EntityTeleport
 api-version: 1.19
 version: 1.0-SNAPSHOT
 depend:
-  - Multiverse-Core
   - Multiverse-Portals
 commands:
   entityteleport:

@@ -43,7 +43,9 @@ public class PlayerInteractListener implements Listener {
         }
 
         Location supportingBlock = getBlockButtonIsOn(clickedBlock);
-        if (portalManager.isButtonOnRelevantPortal(supportingBlock)) {
+        EntityPortal entityPortal = portalManager.getRelevantPortal(supportingBlock);
+        if (entityPortal != null) {
+            portalManager.activatePortal(entityPortal);
             event.getPlayer().sendMessage(ChatColor.GOLD + "yay! :D");
         }
     }
