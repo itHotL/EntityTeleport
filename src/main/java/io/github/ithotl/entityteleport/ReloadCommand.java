@@ -17,6 +17,7 @@ public class ReloadCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             ConfigHandler.reload();
             MyPortalManager.updateSettings();
+            //TODO add feedback
             return true;
         }
         return false;

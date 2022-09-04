@@ -1,8 +1,10 @@
 package io.github.ithotl.entityteleport;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.List;
@@ -36,13 +38,44 @@ public class ConfigHandler {
         return config.getInt("time-to-keep-portal-open-for-entities", 30);
     }
 
-    public Color getParticleColor() {
-        int colorName = config.getInt("particle-color", 0x800080);
+    public int getPercentageOfPortalToAnimate() {
+        int percentage = config.getInt("particle-amount", 20);
+        if (percentage < 0 || percentage > 100) {
+            Bukkit.getLogger().warning("particle-amount cannot be less than 0 or more than 100, please check your config settings!");
+            return 20;
+        }
+        return percentage;
+    }
+
+    public @NotNull Color getParticleColor() {
+        String colorName = getColorCodeString();
+        int colorCode = getColorCode(colorName);
+        return getColor(colorCode);
+    }
+
+    private @NotNull String getColorCodeString() {
+        String colorName = config.getString("particle-color", "0xFF00FF");
+        return colorName.toUpperCase().replaceFirst("#", "0x");
+    }
+
+    private int getColorCode(String colorName) {
         try {
-            return Color.fromRGB(colorName);
+            return Integer.parseInt(colorName);
+        }
+        catch (NumberFormatException ex) {
+            ex.printStackTrace();
+            Bukkit.getLogger().warning("NumberFormatException occurred - please check your config settings for particle-color!");
+            return 0xFF00FF;
+        }
+    }
+
+    private Color getColor(int colorCode) {
+        try {
+            return Color.fromRGB(colorCode);
         }
         catch (IllegalArgumentException e) {
             e.printStackTrace();
+            Bukkit.getLogger().warning("IllegalArgumentException occurred - please check your config settings for particle-color!");
             return Color.PURPLE;
         }
     }

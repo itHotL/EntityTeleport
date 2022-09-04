@@ -9,7 +9,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Main extends JavaPlugin {
 
     private static Main instance;
-    private static ConfigHandler configHandler;
     private static MyPortalManager portalManager;
 
     @Override
@@ -34,13 +33,6 @@ public class Main extends JavaPlugin {
         throw new IllegalStateException("Cannot access EntityTeleport, it is not enabled!");
     }
 
-    public static ConfigHandler getConfigHandler() throws IllegalStateException {
-        if (configHandler != null) {
-            return configHandler;
-        }
-        throw new IllegalStateException("EntityTeleport isn't fully loaded!");
-    }
-
     public static MyPortalManager getPortalManager() throws IllegalStateException {
         if (portalManager != null) {
             return portalManager;
@@ -58,8 +50,8 @@ public class Main extends JavaPlugin {
     }
 
     private void loadMainClasses() {
+        ConfigHandler configHandler = new ConfigHandler();
         PortalManager mvPortals = getMVPortalManager();
-        configHandler = new ConfigHandler();
         portalManager = new MyPortalManager(configHandler, mvPortals);
     }
 

@@ -5,11 +5,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public record EntityPortal(String portalName, Vector minimumPoint, Vector maximumPoint, World world) {
 
@@ -29,39 +27,21 @@ public record EntityPortal(String portalName, Vector minimumPoint, Vector maximu
         return location.toVector().isInAABB(minWithPortalFrame, maxWithPortalFrame);
     }
 
-    @Contract(" -> new")
-    public @NotNull Vector getTopLeftPortalCorner() {
+    public @NotNull ArrayList<Vector> getPortalInside() {
+        ArrayList<Vector> portalVectors = new ArrayList<>();
+        double maxY = maximumPoint.getY() + 0.5;
+        double minY = minimumPoint.getY() + 0.5;
         if (isAlongZAxis()) {
-            return new Vector(
-                    maximumPoint.getX(),
-                    maximumPoint.getY(),
-                    getLowestZ());
+            for (double i = maxY; i >= minY; i--) {
+                portalVectors.addAll(getZAxisRow(i));
+            }
         }
-        return new Vector(
-                getLowestX(),
-                maximumPoint.getY(),
-                maximumPoint.getZ());
-    }
-
-    public @NotNull Set<Vector> getTopRow() {
-        if (isAlongZAxis()) {
-            return getZAxisRow(maximumPoint.getY());
+        else {
+            for (double i = maxY; i >= minY; i--) {
+                portalVectors.addAll(getXAxisRow(i));
+            }
         }
-        return getXAxisRow(maximumPoint.getY());
-    }
-
-    @Contract(" -> new")
-    public @NotNull Vector getTopRightPortalCorner() {
-        if (isAlongZAxis()) {
-            return new Vector(
-                    maximumPoint.getX(),
-                    maximumPoint.getY(),
-                    getHighestZ());
-        }
-        return new Vector(
-                getHighestX(),
-                maximumPoint.getY(),
-                maximumPoint.getZ());
+        return portalVectors;
     }
 
     /**
@@ -70,25 +50,19 @@ public record EntityPortal(String portalName, Vector minimumPoint, Vector maximu
      * 1 apart.
      */
     public boolean isAlongZAxis() {
-        boolean result;
-        if (maximumPoint.getX() > minimumPoint.getX()) {
-            result = maximumPoint.getX() - minimumPoint.getX() <= 1;
-        }
-        else {
-            result = minimumPoint.getX() - maximumPoint.getX() <= 1;
-        }
+        boolean result = maximumPoint.getX() == minimumPoint.getX();
         Bukkit.getLogger().info("(entityPortal) is along z axis: " + result);
         return result;
     }
 
 
-    private @NotNull Set<Vector> getZAxisRow(double y) {
-        Set<Vector> row = new HashSet<>();
-        Vector topLeftCorner = new Vector(maximumPoint.getX(), y, getLowestZ());
+    private @NotNull ArrayList<Vector> getZAxisRow(double y) {
+        ArrayList<Vector> row = new ArrayList<>();
+        Vector topLeftCorner = new Vector(maximumPoint.getX() + 0.5, y, getLowestZ() + 0.5);
         row.add(topLeftCorner.clone());
 
         double width = getHighestZ() - getLowestZ();
-        for (int i = 0; i <= width; i++) {
+        for (int i = 0; i < width; i++) {
             row.add(topLeftCorner.add(new Vector(0, 0, 1)));
         }
         return row;
@@ -96,11 +70,11 @@ public record EntityPortal(String portalName, Vector minimumPoint, Vector maximu
 
     private @NotNull Set<Vector> getXAxisRow(double y) {
         Set<Vector> row = new HashSet<>();
-        Vector topLeftCorner = new Vector(getLowestX(), y, maximumPoint.getZ());
+        Vector topLeftCorner = new Vector(getLowestX() + 0.5, y, maximumPoint.getZ() + 0.5);
         row.add(topLeftCorner.clone());
 
         double width = getHighestX() - getLowestX();
-        for (int i = 0; i <= width; i++) {
+        for (int i = 0; i < width; i++) {
             row.add(topLeftCorner.add(new Vector(1, 0, 0)));
         }
         return row;

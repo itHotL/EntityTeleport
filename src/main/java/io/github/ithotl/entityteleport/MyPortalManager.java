@@ -24,14 +24,14 @@ public class MyPortalManager {
 
     private static ConfigHandler configHandler;
     private static PortalManager mvPortalManager;
-    private final EffectManager effectManager;
+    private static EffectManager effectManager;
     private static Set<EntityPortal> entityTeleportingPortals;
 
     public MyPortalManager(@NotNull ConfigHandler config, PortalManager mvPortalManager) {
         MyPortalManager.configHandler = config;
         MyPortalManager.mvPortalManager = mvPortalManager;
+        effectManager = new EffectManager(config);
 
-        effectManager = new EffectManager();
         entityTeleportingPortals = getRelevantPortals(config.getPortalList());
         if (!entityTeleportingPortals.isEmpty()) {
             new PlayerInteractListener(this);
@@ -40,6 +40,8 @@ public class MyPortalManager {
 
     public static void updateSettings() {
         entityTeleportingPortals = getRelevantPortals(configHandler.getPortalList());
+        effectManager = new EffectManager(configHandler);
+
         if (!entityTeleportingPortals.isEmpty() && !PlayerInteractListener.isRunning()) {
             new PlayerInteractListener(Main.getPortalManager());
         }
