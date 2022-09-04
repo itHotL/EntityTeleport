@@ -40,42 +40,33 @@ public class ConfigHandler {
 
     public int getPercentageOfPortalToAnimate() {
         int percentage = config.getInt("particle-amount", 20);
-        if (percentage < 0 || percentage > 100) {
-            Bukkit.getLogger().warning("particle-amount cannot be less than 0 or more than 100, please check your config settings!");
-            return 20;
+        if (percentage < 0) {
+            Bukkit.getLogger().warning("particle-amount cannot be less than 0, please check your config settings!");
+            return 0;
         }
         return percentage;
     }
 
     public @NotNull Color getParticleColor() {
         String colorName = getColorCodeString();
-        int colorCode = getColorCode(colorName);
-        return getColor(colorCode);
+        return getColor(colorName);
     }
 
     private @NotNull String getColorCodeString() {
-        String colorName = config.getString("particle-color", "0xFF00FF");
-        return colorName.toUpperCase().replaceFirst("#", "0x");
+        String colorName = config.getString("particle-color", "#FF00FF");
+        return colorName.replaceFirst("#", "");
     }
 
-    private int getColorCode(String colorName) {
+    private Color getColor(@NotNull String colorName) {
         try {
-            return Integer.parseInt(colorName);
+            int r = Integer.valueOf(colorName.substring(0, 2),16);
+            int g = Integer.valueOf(colorName.substring(2, 4),16);
+            int b = Integer.valueOf(colorName.substring(4, 6),16);
+            return Color.fromRGB(r, g, b);
         }
-        catch (NumberFormatException ex) {
-            ex.printStackTrace();
-            Bukkit.getLogger().warning("NumberFormatException occurred - please check your config settings for particle-color!");
-            return 0xFF00FF;
-        }
-    }
-
-    private Color getColor(int colorCode) {
-        try {
-            return Color.fromRGB(colorCode);
-        }
-        catch (IllegalArgumentException e) {
+        catch (NumberFormatException e) {
             e.printStackTrace();
-            Bukkit.getLogger().warning("IllegalArgumentException occurred - please check your config settings for particle-color!");
+            Bukkit.getLogger().warning("NumberFormatException occurred - please check your config settings for particle-color!");
             return Color.PURPLE;
         }
     }

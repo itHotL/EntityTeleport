@@ -9,15 +9,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public record EntityPortal(String portalName, Vector minimumPoint, Vector maximumPoint, World world) {
+public record EntityPortal(String portalName, Vector minimumPoint, Vector maximumPoint, ArrayList<Vector> portalInside, World world) {
 
     public static @NotNull EntityPortal fromMVPortal(@NotNull MVPortal portal) {
         String name = portal.getName();
         World world = portal.getWorld();
         Vector minimumPoint = portal.getLocation().getMinimum();
         Vector maximumPoint = portal.getLocation().getMaximum();
+        ArrayList<Vector> portalInside = getPortalInside(maximumPoint, minimumPoint);
 
-        return new EntityPortal(name, minimumPoint, maximumPoint, world);
+        return new EntityPortal(name, minimumPoint, maximumPoint, portalInside, world);
     }
 
     public boolean containsLocation(@NotNull Location location) {
@@ -25,23 +26,6 @@ public record EntityPortal(String portalName, Vector minimumPoint, Vector maximu
         Vector maxWithPortalFrame = maximumPoint.clone().add(new Vector(1, 1, 1));
 
         return location.toVector().isInAABB(minWithPortalFrame, maxWithPortalFrame);
-    }
-
-    public @NotNull ArrayList<Vector> getPortalInside() {
-        ArrayList<Vector> portalVectors = new ArrayList<>();
-        double maxY = maximumPoint.getY() + 0.5;
-        double minY = minimumPoint.getY() + 0.5;
-        if (isAlongZAxis()) {
-            for (double i = maxY; i >= minY; i--) {
-                portalVectors.addAll(getZAxisRow(i));
-            }
-        }
-        else {
-            for (double i = maxY; i >= minY; i--) {
-                portalVectors.addAll(getXAxisRow(i));
-            }
-        }
-        return portalVectors;
     }
 
     /**
@@ -78,6 +62,29 @@ public record EntityPortal(String portalName, Vector minimumPoint, Vector maximu
             row.add(topLeftCorner.add(new Vector(1, 0, 0)));
         }
         return row;
+    }
+
+    private static @NotNull ArrayList<Vector> getPortalInside(@NotNull Vector maximumPoint, @NotNull Vector minimumPoint) {
+        ArrayList<Vector> portalVectors = new ArrayList<>();
+        double maxX = maximumPoint.getX() + 0.5;
+        double maxY = maximumPoint.getY() + 0.5;
+        double maxZ = maximumPoint.getZ() + 0.5;
+        Bukkit.getLogger().info("start values max: " + maxX + ", " + maxY + ", " + maxZ);
+
+        double minX = minimumPoint.getX() + 0.5;
+        double minY = minimumPoint.getY() + 0.5;
+        double minZ = minimumPoint.getZ() + 0.5;
+        Bukkit.getLogger().info("start values min: " + minX + ", " + minY + ", " + minZ);
+
+        for (double x = minX; x <= maxX; x++) {
+            for (double y = minY; y <= maxY; y++) {
+                for (double z = minZ; z <= maxZ; z++) {
+                    Bukkit.getLogger().info("adding coords x: " + x + ", y: " + y + ", z: " + z);
+                    portalVectors.add(new Vector(x, y, z));
+                }
+            }
+        }
+        return portalVectors;
     }
 
     private double getLowestZ() {

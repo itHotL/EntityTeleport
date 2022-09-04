@@ -21,7 +21,7 @@ public class EffectManager {
 
     public EffectManager(ConfigHandler config) {
         particleColor = config.getParticleColor();
-        particleAmount = config.getPercentageOfPortalToAnimate() / 100F;
+        particleAmount = config.getPercentageOfPortalToAnimate() / 10F;
     }
 
     /**
@@ -42,7 +42,7 @@ public class EffectManager {
 
     private @NotNull BukkitTask provideParticles(@NotNull EntityPortal portal) {
         World world = portal.world();
-        ArrayList<Vector> portalBlocks = portal.getPortalInside();
+        ArrayList<Vector> portalBlocks = portal.portalInside();
         int totalBlocks = portalBlocks.size();
         Bukkit.getLogger().info("(provideParticles) totalBlocks: " + totalBlocks);
         int blocksToAnimate = getAmountOfPortalBlocksToAnimate(totalBlocks);
@@ -56,11 +56,10 @@ public class EffectManager {
                     spawnParticles(chosenBlock.toLocation(world));
                 }
             }
-        }.runTaskTimerAsynchronously(Main.getInstance(), 0, 10);
+        }.runTaskTimerAsynchronously(Main.getInstance(), 0, 20);
     }
 
     private void spawnParticles(@NotNull Location location) {
-        Bukkit.getLogger().info("(spawnParticles) particles at: " + location);
         World world = location.getWorld();
         if (world != null) {
             world.spawnParticle(Particle.REDSTONE, location, 1, 0.33, 0.5, 0.33, getDustOptions());
@@ -72,7 +71,7 @@ public class EffectManager {
     }
 
     private @NotNull Particle.DustOptions getDustOptions() {
-        float size = random.nextFloat(0.25F, 2F);
+        float size = random.nextFloat(0.25F, 2.25F);
         return new Particle.DustOptions(particleColor, size);
     }
 }
