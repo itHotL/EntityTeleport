@@ -2,7 +2,6 @@ package io.github.ithotl.entityteleport;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Directional;
@@ -42,7 +41,7 @@ public class PlayerInteractListener implements Listener {
             return;
         }
 
-        Location supportingBlock = getBlockButtonIsOn(clickedBlock);
+        Block supportingBlock = getBlockButtonIsOn(clickedBlock);
         EntityPortal entityPortal = portalManager.getRelevantPortal(supportingBlock);
         if (entityPortal != null) {
             portalManager.activatePortal(entityPortal);
@@ -50,10 +49,9 @@ public class PlayerInteractListener implements Listener {
         }
     }
 
-    private @NotNull Location getBlockButtonIsOn(@NotNull Block clickedButton) {
+    private @NotNull Block getBlockButtonIsOn(@NotNull Block clickedButton) {
         Directional buttonFace = (Directional) clickedButton.getBlockData();
         BlockFace attachedSide = buttonFace.getFacing().getOppositeFace();
-        Block blockButtonIsOn = clickedButton.getRelative(attachedSide);
-        return blockButtonIsOn.getLocation();
+        return clickedButton.getRelative(attachedSide);
     }
 }

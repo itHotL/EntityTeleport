@@ -19,30 +19,17 @@ public class EffectManager {
     private final Color particleColor;
     private final float particleAmount;
 
-    public EffectManager(ConfigHandler config) {
+    public EffectManager(@NotNull ConfigHandler config) {
         particleColor = config.getParticleColor();
         particleAmount = config.getPercentageOfPortalToAnimate() / 10F;
     }
 
     /**
      * @param portal the EntityPortal to provide visual animation for
-     * @param duration the amount of time in ticks the portal should
-     *                 be animated
      */
-    public void animatePortal(@NotNull EntityPortal portal, long duration) {
-        BukkitTask animator = provideParticles(portal);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                animator.cancel();
-                Bukkit.getLogger().info("(cancel-runnable): animator cancelled");
-            }
-        }.runTaskLaterAsynchronously(Main.getInstance(), duration);
-    }
-
-    private @NotNull BukkitTask provideParticles(@NotNull EntityPortal portal) {
-        World world = portal.world();
-        ArrayList<Vector> portalBlocks = portal.portalInside();
+    public @NotNull BukkitTask provideParticles(@NotNull EntityPortal portal) {
+        World world = portal.world;
+        ArrayList<Vector> portalBlocks = portal.portalInside;
         int totalBlocks = portalBlocks.size();
         Bukkit.getLogger().info("(provideParticles) totalBlocks: " + totalBlocks);
         int blocksToAnimate = getAmountOfPortalBlocksToAnimate(totalBlocks);

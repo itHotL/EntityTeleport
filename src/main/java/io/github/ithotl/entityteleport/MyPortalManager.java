@@ -1,10 +1,13 @@
 package io.github.ithotl.entityteleport;
 
+import com.onarandombox.MultiverseCore.api.MVDestination;
 import com.onarandombox.MultiversePortals.MVPortal;
 import com.onarandombox.MultiversePortals.utils.PortalManager;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,29 +50,59 @@ public class MyPortalManager {
         }
     }
 
-    public void activatePortal(EntityPortal entityPortal) {
-        long duration = configHandler.getAmountOfSecondsToActivatePortal() * 20L;
-        Bukkit.getLogger().info("(myPortalManager) duration: " + duration);
-        effectManager.animatePortal(entityPortal, duration);
-    }
-
-    public EntityPortal getRelevantPortal(@NotNull Location location) {
-        World world = location.getWorld();
+    public EntityPortal getRelevantPortal(@NotNull Block block) {
+        World world = block.getLocation().getWorld();
         if (world != null) {
             Set<EntityPortal> portalsInThisWorld = getPortalsInWorld(world);
             return portalsInThisWorld.stream()
-                    .filter(portal -> portal.containsLocation(location))
+                    .filter(portal -> portal.isBlockOnMVPortal(block))
                     .findAny()
                     .orElse(null);
         }
         return null;
     }
 
+    public void activatePortal(EntityPortal entityPortal) {
+        if (entityPortal.isActivated()) {
+            return;
+        }
+        long duration = configHandler.getAmountOfSecondsToActivatePortal() * 20L;
+        Bukkit.getLogger().info("(myPortalManager) duration: " + (duration / 20L));
+
+        entityPortal.activate();
+        BukkitTask animator = effectManager.provideParticles(entityPortal);
+        BukkitTask teleporter = teleportEntities(entityPortal);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                animator.cancel();
+                teleporter.cancel();
+                entityPortal.deactivate();
+                Bukkit.getLogger().info("(cancel-runnable): animator cancelled");
+            }
+        }.runTaskLaterAsynchronously(Main.getInstance(), duration);
+    }
+
+    private @NotNull BukkitTask teleportEntities(@NotNull EntityPortal entityPortal) {
+        MVDestination destination = entityPortal.destination;
+        return new BukkitRunnable() {
+            @Override
+            public void run() {
+                entityPortal.getEntitiesCurrentlyInsidePortal()
+                        .forEach(entity -> {
+                            entity.teleport(destination.getLocation(entity));
+                            entity.setVelocity(destination.getVelocity());
+                            Bukkit.getLogger().info(entity.getName() + " teleported!");
+                        });
+            }
+        }.runTaskTimer(Main.getInstance(), 0, 1);
+    }
+
     private static Set<EntityPortal> getRelevantPortals(@NotNull List<String> portalNames) {
         return portalNames.stream()
                 .map(MyPortalManager::getMVPortal)
                 .filter(Objects::nonNull)
-                .map(EntityPortal::fromMVPortal)
+                .map(EntityPortal::new)
                 .collect(Collectors.toSet());
     }
 
@@ -85,7 +118,7 @@ public class MyPortalManager {
 
     private Set<EntityPortal> getPortalsInWorld(World world) {
         return entityTeleportingPortals.stream()
-                .filter(portal -> portal.world() == world)
+                .filter(portal -> portal.world == world)
                 .collect(Collectors.toSet());
     }
 }

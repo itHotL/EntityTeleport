@@ -1,5 +1,6 @@
 package io.github.ithotl.entityteleport;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -12,12 +13,18 @@ import java.util.List;
 /** The reload command. When called, it loads the config from file. */
 public class ReloadCommand implements CommandExecutor, TabCompleter {
 
+    private final String reloaded =
+                    ChatColor.GRAY + "[" +
+                    ChatColor.BLUE + "EntityTeleport" +
+                    ChatColor.GRAY + "]" +
+                    ChatColor.GREEN + " Reloaded!";
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             ConfigHandler.reload();
             MyPortalManager.updateSettings();
-            //TODO add feedback
+            sender.sendMessage(reloaded);
             return true;
         }
         return false;
