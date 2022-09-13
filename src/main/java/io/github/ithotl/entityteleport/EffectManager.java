@@ -1,8 +1,6 @@
 package io.github.ithotl.entityteleport;
 
 import org.bukkit.*;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,34 +14,29 @@ import java.util.Random;
 public class EffectManager {
 
     private final Random random = new Random();
-    private final Color particleColor;
-    private final float particleAmount;
+    private static ConfigHandler config;
+    private static Color particleColor;
+    private static float particleAmount;
 
-    public EffectManager(@NotNull ConfigHandler config) {
+    public EffectManager(@NotNull ConfigHandler configHandler) {
+        EffectManager.config = configHandler;
         particleColor = config.getParticleColor();
         particleAmount = config.getPercentageOfPortalToAnimate() / 10F;
     }
 
-    /**
-     * @param portal the EntityPortal to provide visual animation for
-     */
-    public @NotNull BukkitTask provideParticles(@NotNull EntityPortal portal) {
-        World world = portal.world;
-        ArrayList<Vector> portalBlocks = portal.portalInside;
-        int totalBlocks = portalBlocks.size();
-        Bukkit.getLogger().info("(provideParticles) totalBlocks: " + totalBlocks);
-        int blocksToAnimate = getAmountOfPortalBlocksToAnimate(totalBlocks);
-        Bukkit.getLogger().info("(provideParticles) blocksToAnimate: " + blocksToAnimate);
+    public static void updateSettings() {
+        particleColor = config.getParticleColor();
+        particleAmount = config.getPercentageOfPortalToAnimate() / 10F;
+    }
 
-        return new BukkitRunnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < blocksToAnimate; i++) {
-                    Vector chosenBlock = portalBlocks.get(random.nextInt(totalBlocks));
-                    spawnParticles(chosenBlock.toLocation(world));
-                }
-            }
-        }.runTaskTimerAsynchronously(Main.getInstance(), 0, 20);
+    public void spawnParticles(World world, @NotNull ArrayList<Vector> particleLocations) {
+        int totalBlocks = particleLocations.size();
+        int blocksToAnimate = getAmountOfPortalBlocksToAnimate(totalBlocks);
+
+        for (int i = 0; i < blocksToAnimate; i++) {
+            Vector chosenBlock = particleLocations.get(random.nextInt(totalBlocks));
+            spawnParticles(chosenBlock.toLocation(world));
+        }
     }
 
     private void spawnParticles(@NotNull Location location) {

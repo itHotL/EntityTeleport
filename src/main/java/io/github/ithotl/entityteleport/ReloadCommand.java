@@ -17,13 +17,14 @@ public class ReloadCommand implements CommandExecutor, TabCompleter {
                     ChatColor.GRAY + "[" +
                     ChatColor.BLUE + "EntityTeleport" +
                     ChatColor.GRAY + "]" +
-                    ChatColor.GREEN + " Reloaded!";
+                    ChatColor.WHITE + " Reloaded!";
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             ConfigHandler.reload();
             MyPortalManager.updateSettings();
+            EffectManager.updateSettings();
             sender.sendMessage(reloaded);
             return true;
         }

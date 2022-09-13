@@ -8,8 +8,8 @@ time-to-keep-portal-open-for-entities: 30
 
 # Color of the particles that indicate entities can currently
 # go through the portal (in RGB format)
-particle-color: '0xFF00FF'
+particle-color: '#FF00FF'
 
 # Percentage higher than 0 that determines how many particles
 # an activated portal should show
-particle-amount: 20
+particle-amount: 60

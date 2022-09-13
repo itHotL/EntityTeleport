@@ -10,6 +10,7 @@ public class Main extends JavaPlugin {
 
     private static Main instance;
     private static MyPortalManager portalManager;
+    private static EffectManager effectManager;
 
     @Override
     public void onEnable() {
@@ -40,6 +41,13 @@ public class Main extends JavaPlugin {
         throw new IllegalStateException("EntityTeleport isn't fully loaded!");
     }
 
+    public static EffectManager getEffectManager() throws IllegalStateException {
+        if (effectManager != null) {
+            return effectManager;
+        }
+        throw new IllegalStateException("EntityTeleport isn't fully loaded!");
+    }
+
     private void prepareCommands() {
         PluginCommand pluginReloadCommand = this.getCommand("entityteleport");
         ReloadCommand reloadCommand = new ReloadCommand();
@@ -52,6 +60,7 @@ public class Main extends JavaPlugin {
     private void loadMainClasses() {
         ConfigHandler configHandler = new ConfigHandler();
         PortalManager mvPortals = getMVPortalManager();
+        effectManager = new EffectManager(configHandler);
         portalManager = new MyPortalManager(configHandler, mvPortals);
     }
 

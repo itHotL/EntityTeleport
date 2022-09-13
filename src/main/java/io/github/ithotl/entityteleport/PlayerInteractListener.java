@@ -1,7 +1,6 @@
 package io.github.ithotl.entityteleport;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Directional;
@@ -45,7 +44,6 @@ public class PlayerInteractListener implements Listener {
         EntityPortal entityPortal = portalManager.getRelevantPortal(supportingBlock);
         if (entityPortal != null) {
             portalManager.activatePortal(entityPortal);
-            event.getPlayer().sendMessage(ChatColor.GOLD + "yay! :D");
         }
     }
 

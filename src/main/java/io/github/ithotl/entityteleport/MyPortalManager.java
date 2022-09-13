@@ -1,13 +1,10 @@
 package io.github.ithotl.entityteleport;
 
-import com.onarandombox.MultiverseCore.api.MVDestination;
 import com.onarandombox.MultiversePortals.MVPortal;
 import com.onarandombox.MultiversePortals.utils.PortalManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,13 +24,11 @@ public class MyPortalManager {
 
     private static ConfigHandler configHandler;
     private static PortalManager mvPortalManager;
-    private static EffectManager effectManager;
     private static Set<EntityPortal> entityTeleportingPortals;
 
     public MyPortalManager(@NotNull ConfigHandler config, PortalManager mvPortalManager) {
         MyPortalManager.configHandler = config;
         MyPortalManager.mvPortalManager = mvPortalManager;
-        effectManager = new EffectManager(config);
 
         entityTeleportingPortals = getRelevantPortals(config.getPortalList());
         if (!entityTeleportingPortals.isEmpty()) {
@@ -43,7 +38,6 @@ public class MyPortalManager {
 
     public static void updateSettings() {
         entityTeleportingPortals = getRelevantPortals(configHandler.getPortalList());
-        effectManager = new EffectManager(configHandler);
 
         if (!entityTeleportingPortals.isEmpty() && !PlayerInteractListener.isRunning()) {
             new PlayerInteractListener(Main.getPortalManager());
@@ -62,40 +56,12 @@ public class MyPortalManager {
         return null;
     }
 
-    public void activatePortal(EntityPortal entityPortal) {
-        if (entityPortal.isActivated()) {
-            return;
-        }
+    public void activatePortal(@NotNull EntityPortal entityPortal) {
         long duration = configHandler.getAmountOfSecondsToActivatePortal() * 20L;
-        Bukkit.getLogger().info("(myPortalManager) duration: " + (duration / 20L));
-
-        entityPortal.activate();
-        BukkitTask animator = effectManager.provideParticles(entityPortal);
-        BukkitTask teleporter = teleportEntities(entityPortal);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                animator.cancel();
-                teleporter.cancel();
-                entityPortal.deactivate();
-                Bukkit.getLogger().info("(cancel-runnable): animator cancelled");
-            }
-        }.runTaskLaterAsynchronously(Main.getInstance(), duration);
-    }
-
-    private @NotNull BukkitTask teleportEntities(@NotNull EntityPortal entityPortal) {
-        MVDestination destination = entityPortal.destination;
-        return new BukkitRunnable() {
-            @Override
-            public void run() {
-                entityPortal.getEntitiesCurrentlyInsidePortal()
-                        .forEach(entity -> {
-                            entity.teleport(destination.getLocation(entity));
-                            entity.setVelocity(destination.getVelocity());
-                            Bukkit.getLogger().info(entity.getName() + " teleported!");
-                        });
-            }
-        }.runTaskTimer(Main.getInstance(), 0, 1);
+        if (entityPortal.isActivated()) {
+            entityPortal.deactivateImmediately();
+        }
+        entityPortal.activate(duration);
     }
 
     private static Set<EntityPortal> getRelevantPortals(@NotNull List<String> portalNames) {
